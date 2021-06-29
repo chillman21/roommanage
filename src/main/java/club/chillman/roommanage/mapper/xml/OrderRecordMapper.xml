@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="club.chillman.roommanage.mapper.OrderRecordMapper">
+    <select id="findRecordsIn7Days" resultType="club.chillman.roommanage.entity.OrderRecord">
+        SELECT
+        *
+        FROM
+        `order_record` ord
+        WHERE
+        ord.room_id = #{roomId} and DATEDIFF(`start_time`,NOW()) AND ord.`is_deleted` = '0' BETWEEN 0 and 7
+    </select>
+    <select id="findAllRecordsById" resultType="club.chillman.roommanage.entity.vo.OrderRecordVO">
+        SELECT
+            ord.id, ord.room_id, cr.full_name, ord.start_time, ord.end_time, ord.gmt_create, ord.is_deleted
+        FROM
+            `order_record` AS ord
+                JOIN `conference_room` AS cr ON cr.id = ord.room_id
+        WHERE
+            `user_id` = #{userId} ORDER BY ord.gmt_create DESC
+    </select>
+    <select id="findCompletedRecordsById" resultType="club.chillman.roommanage.entity.vo.OrderRecordVO">
+        SELECT
+        ord.id, ord.room_id, cr.full_name, ord.start_time, ord.end_time, ord.gmt_create, ord.is_deleted
+        FROM
+        `order_record` AS ord
+        JOIN `conference_room` AS cr ON cr.id = ord.room_id
+        WHERE
+        `user_id` = #{userId} AND ord.end_time &lt; NOW() AND ord.`is_deleted` = '0' ORDER BY ord.gmt_create DESC
+    </select>
+
+    <select id="findReservedRecordsById" resultType="club.chillman.roommanage.entity.vo.OrderRecordVO">
+        SELECT
+        ord.id, ord.room_id, cr.full_name, ord.start_time, ord.end_time, ord.gmt_create, ord.is_deleted
+        FROM
+        `order_record` AS ord
+        JOIN `conference_room` AS cr ON cr.id = ord.room_id
+        WHERE
+        `user_id` = #{userId} AND (ord.start_time &gt;= NOW() OR (ord.end_time &gt;= NOW() AND ord.start_time &lt;= NOW())) AND ord.`is_deleted` = '0' ORDER BY ord.gmt_create DESC
+    </select>
+</mapper>
+<!--
+
+符号	    小于	   小于等于  大于	    大于等于	和	    单引号	双引号
+原符号	<	    <=	    >	    >=	    &	    ’	    "
+替换符号	&lt;	&lt;=	&gt;	&gt;=	&amp;	&apos;	&quot;
+-->
